@@ -9,10 +9,12 @@
     "lint": "eslint --cache .",
     "preview": "vite preview",
     "format": "prettier --cache --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "toc": "markdown-toc -i README.md"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.9",
+    "markdown-toc": "^1.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.0.9"
