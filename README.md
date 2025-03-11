@@ -51,13 +51,13 @@ BackDo는 resume로 지나쳤다거나, step을 누르면서 지나쳤다거나 
   - initialization part에서 for 문 이전의 줄로 이동할 수 있습니다.
 - for loop 문 밖에서 재진입시 마지막 loop counter를 가진 condition part로 이동할 수 있습니다.
 
-![for문에서BackDo](https://github.com/user-attachments/assets/7cbbb28e-a626-4951-b8e6-64b76f41bb44)
+[![for문에서BackDo](https://github.com/user-attachments/assets/7cbbb28e-a626-4951-b8e6-64b76f41bb44)](https://landing.BackDo.site/)
 
 ## if 문에서 BackDo
 
 - 조건에 의해 도달 할 수 없는 줄은 건너뜁니다.
 
-![if문에서BackDo](https://github.com/user-attachments/assets/1625cb7e-54c8-42fa-8a66-23c7f6a2f89f)
+[![if문에서BackDo](https://github.com/user-attachments/assets/1625cb7e-54c8-42fa-8a66-23c7f6a2f89f)](https://landing.BackDo.site/)
 
 ## 함수에서 BackDo
 
@@ -68,21 +68,21 @@ BackDo는 resume로 지나쳤다거나, step을 누르면서 지나쳤다거나 
 - 중첩 함수 내부에서 한 단계씩 거꾸로 갈 수 있습니다.
 - 콜백 함수 내부에서 한 단계씩 거꾸로 갈 수 있습니다.
 
-![중첩에서BackDo](https://github.com/user-attachments/assets/e1313daa-f32d-497d-9301-d2f1b8dab41a)
-![콜백에서BackDo](https://github.com/user-attachments/assets/4e7cbccb-1847-45dc-82e6-df46b815d95a)
+[![중첩에서BackDo](https://github.com/user-attachments/assets/e1313daa-f32d-497d-9301-d2f1b8dab41a)](https://landing.BackDo.site/)
+[![콜백에서BackDo](https://github.com/user-attachments/assets/4e7cbccb-1847-45dc-82e6-df46b815d95a)](https://landing.BackDo.site/)
 
 
 # 기술 스택
 
-<img src="https://img.shields.io/badge/chrome devtools protocol-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white">
-<img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
-<img src="https://img.shields.io/badge/puppeteer-40B5A4?style=for-the-badge&logo=puppeteer&logoColor=white">
-<img src="https://img.shields.io/badge/express-000000?style=for-the-badge&logo=express&logoColor=white">
-<img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white">
-<img src="https://img.shields.io/badge/tailwind css-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white">
-<img src="https://img.shields.io/badge/daisy ui-1AD1A5?style=for-the-badge&logo=daisyui&logoColor=white">
-<img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white">
-<img src="https://img.shields.io/badge/netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white">
+[![chrome_devtools_protocol](https://img.shields.io/badge/chrome_devtools_protocol-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromedevtools.github.io/devtools-protocol)
+[![typescript](https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![puppeteer](https://img.shields.io/badge/puppeteer-40B5A4?style=for-the-badge&logo=puppeteer&logoColor=white)](https://pptr.dev/)
+[![express](https://img.shields.io/badge/express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![react](https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![tailwind css](https://img.shields.io/badge/tailwind_css-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![daisy ui](https://img.shields.io/badge/daisy_ui-1AD1A5?style=for-the-badge&logo=daisyui&logoColor=white)](https://daisyui.com/)
+[![vite](https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![netlify](https://img.shields.io/badge/netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://www.netlify.com)
 
 # 개발 과정 중 챌린지 요소
 
