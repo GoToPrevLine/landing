@@ -1,5 +1,7 @@
 # BackDo
 
+- 다음 이미지를 클릭하면 프로젝트 사이트로 이동합니다.
+
 [![Untitled.png](https://github.com/user-attachments/assets/3edcb1f1-8033-4671-9979-25cdedaf9741)](https://landing.BackDo.site/)
 
 # 목차
@@ -20,10 +22,13 @@
     + [코드 베이스 탐구 영역 한정](#%EC%BD%94%EB%93%9C-%EB%B2%A0%EC%9D%B4%EC%8A%A4-%ED%83%90%EA%B5%AC-%EC%98%81%EC%97%AD-%ED%95%9C%EC%A0%95)
     + [기존 로직 활용 여부](#%EA%B8%B0%EC%A1%B4-%EB%A1%9C%EC%A7%81-%ED%99%9C%EC%9A%A9-%EC%97%AC%EB%B6%80)
   * [BackDo 기능 구현하기](#backdo-%EA%B8%B0%EB%8A%A5-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0)
-    + [기본 접근 방법](#%EA%B8%B0%EB%B3%B8-%EC%A0%91%EA%B7%BC-%EB%B0%A9%EB%B2%95)
-    + [JavaScript 코드흐름과 breakpoint 흐름 맞추기](#javascript-%EC%BD%94%EB%93%9C%ED%9D%90%EB%A6%84%EA%B3%BC-breakpoint-%ED%9D%90%EB%A6%84-%EB%A7%9E%EC%B6%94%EA%B8%B0)
-      - [for 문 body](#for-%EB%AC%B8-body)
-      - [for 문 head](#for-%EB%AC%B8-head)
+    + [방향 : JavaScript 흐름과 breakpoint 흐름 맞추기](#%EB%B0%A9%ED%96%A5--javascript-%ED%9D%90%EB%A6%84%EA%B3%BC-breakpoint-%ED%9D%90%EB%A6%84-%EB%A7%9E%EC%B6%94%EA%B8%B0)
+      - [for 문의 흐름](#for-%EB%AC%B8%EC%9D%98-%ED%9D%90%EB%A6%84)
+      - [for 문 body와 조건 부여](#for-%EB%AC%B8-body%EC%99%80-%EC%A1%B0%EA%B1%B4-%EB%B6%80%EC%97%AC)
+      - [for 문 head의 afterthought part와 현재 위치](#for-%EB%AC%B8-head%EC%9D%98-afterthought-part%EC%99%80-%ED%98%84%EC%9E%AC-%EC%9C%84%EC%B9%98)
+      - [for 문 head의 condition part와 세 가지 상태](#for-%EB%AC%B8-head%EC%9D%98-condition-part%EC%99%80-%EC%84%B8-%EA%B0%80%EC%A7%80-%EC%83%81%ED%83%9C)
+    + [정도 : 거꾸로 가야하는 최소한의 정도를 구하기](#%EC%A0%95%EB%8F%84--%EA%B1%B0%EA%BE%B8%EB%A1%9C-%EA%B0%80%EC%95%BC%ED%95%98%EB%8A%94-%EC%B5%9C%EC%86%8C%ED%95%9C%EC%9D%98-%EC%A0%95%EB%8F%84%EB%A5%BC-%EA%B5%AC%ED%95%98%EA%B8%B0)
+    + [범위 : 이동할 레벨을 한정시키기](#%EB%B2%94%EC%9C%84--%EC%9D%B4%EB%8F%99%ED%95%A0-%EB%A0%88%EB%B2%A8%EC%9D%84-%ED%95%9C%EC%A0%95%EC%8B%9C%ED%82%A4%EA%B8%B0)
     + [도달할 수 없는 블럭 판단](#%EB%8F%84%EB%8B%AC%ED%95%A0-%EC%88%98-%EC%97%86%EB%8A%94-%EB%B8%94%EB%9F%AD-%ED%8C%90%EB%8B%A8)
       - [함수 내부에서 함수 이름을 찾을 수 없음](#%ED%95%A8%EC%88%98-%EB%82%B4%EB%B6%80%EC%97%90%EC%84%9C-%ED%95%A8%EC%88%98-%EC%9D%B4%EB%A6%84%EC%9D%84-%EC%B0%BE%EC%9D%84-%EC%88%98-%EC%97%86%EC%9D%8C)
 
@@ -126,46 +131,80 @@ Chrome DevTools frontend 부분을 수정하지만 벡엔드와의 연결도 필
 
 ## BackDo 기능 구현하기
 
-### 기본 접근 방법
+BackDo 기능은 디버거가 이전 줄의 위치에서 멈추도록 하는 기능입니다. 적절한 위치에 breakpoint를 부여합니다. 현재 실행 중인 함수를 다시 실행 시킵니다. 해당 위치에 멈출 때 까지 재개시킵니다. BackDo 기능에서 가장 중요한 점은 디버거에게 적절한 위치를 알리는 것입니다. 적절한 위치를 선정할 때 고려해야 하는 점은 다음 3가지입니다.
 
-평소에 이전 줄의 상태를 보고 싶을 때 제가 사용하던 방법을 코드화 시키는 간단한 접근 방법을 채택했습니다. 가고 싶은 이전 줄의 숫자를 기억하고, 스크립트를 다시 실행하고, 기억한 줄에 breakpoint를 주고, 재개하는 방법입니다. 모든 상태를 기억하는 방법은 이후의 요청이 꼬여 기존 디버거 기능 작동을 침범할 우려, 속도와 용량의 균형을 맞춰야 하는 추가 고려사항이 생겨 후순위로 미뤘습니다. 반면에 breakpoint + top callFrame restart + resume 방식은 기존 디버거에서 제공하는 기능을 새로이 조합하여 통제 범위를 BackDo의 핵심 기능 부분으로 한정 시킬 수 있습니다. 그리고 별도로 저장하는 데이터가 없어 속도와 용량 문제도 발생하지 않습니다. 다만 제약사항으로 순수함수만 대응이 가능합니다. 작은 기능이라도 튼튼하게 구현할 수 있는 방향으로 선택했습니다.
+- 방향 : JavaScript 흐름에 맞춰야 합니다.
+- 정도 : 최소한의 정도로만 거꾸로 가야 합니다.
+- 범위 : 이동할 레벨을 한정시켜야 합니다.
 
-### JavaScript 코드흐름과 breakpoint 흐름 맞추기
+### 방향 : JavaScript 흐름과 breakpoint 흐름 맞추기
+
+JavaScript 방향과 breakpoint의 방향은 같지 않을 때가 있습니다. 이를 맞추기 위해서는 현재 위치를 감지하고 이동할 좌표를 얻어야 합니다. 그리고 이동할 좌표에 필요한 데이터를 취득해야 합니다. 취득한 데이터를 바탕으로 조건을 생성하면 됩니다. 상황 예로 for 문을 들어보겠습니다.
+
+#### for 문의 흐름
+
+다음 이미지와 같이 for 문에서의 JavaScript 흐름과 breakpoint의 흐름은 많이 다릅니다. breakpoint는 위에서 아래로 순서대로 흐르고 다시 되돌아 가지 않고 단순히 나열만 되어 있습니다. 이와 반대로 JavaScript는 for 문에서 다음과 같은 특이점들이 있습니다.
+
+1. for 문의 body에서 같은 줄을, 변경된 loop counter를 가지고 다시 방문합니다.
+2. for 문의 body의 마지막 줄에서, afterthought part로 올라가 이동합니다.
+3. for 문의 afterthought part에서 condition part로 이동합니다.
+4. for 문의 condition part에서, 몇 번째 순회인지 여부에 따라, for 문의 body의 첫 번째 줄로 이동 할 수도 있고 아니면 for 문을 탈출 할 수도 있습니다.
 
 ![Group 1](https://github.com/user-attachments/assets/de126fdd-71c7-485e-8f29-6c55ce0f9c0d)
 ![Group 2](https://github.com/user-attachments/assets/b1ff1c47-3af8-4953-8c44-41d235d2a32a)
 
-#### for 문 body
+위의 특이점들도 인해 각각 문제상황이 발생되어 다음과 같이 해결했습니다. 첫 번째 부터 차례대로 자세히 설명하겠습니다.
 
-**breakpoint를 현재 줄에서 이전 줄에 단순히 주면 restart를 한 이후에 loop counter가 0인 상태로 리셋이 되는 문제**가 발생했습니다. for 문이 제어문이기 때문입니다. 일반적인 JavaScript 코드흐름은 위에서 아래로 흐르지만 코드 흐름을 제어하는 제어문인 for 문은 빙글빙글 돌면서 동일 한 줄을 여러번 실행할 수 있습니다. loop counter를 취득해 조건을 부여한 breaklpoint를 사용합니다.
+#### for 문 body와 조건 부여
 
-이동 시 loop counter를 유지하기 위해서 **conditional breakpoint**를 사용했습니다. “i === 3”과 같이 문자열로된 표현식을 가진 조건을 생성해 breakpoint를 줄 때 optional 하게 부여 할 수 있습니다. 이에 필요한 loop counter를 어떻게 취득방법은 다음과 같습니다.
+JavaScript 흐름을 고려하지 않으면, breakpoint가 조건없이 부여되어 loop counter가 0으로 리셋되는 문제가 발생합니다. 이에 현재의 loop counter를 취득해 조건을 부여한 Conditional Breakpoint로 만들면 문제를 해결할 수 있습니다.
 
-loop counter를 scopeChain에서 얻을 수 있을 것이라고 추측 할 수 있습니다. scopeChain은 callFrame에서 얻을 수 있을 것이고 callFrame은 디버거가 paused 상태일 때 접근 할 수 있습니다. protocol monitor로 디버거 동작을 감시하다가 힌트를 얻었습니다. 다만 scope의 변수 정보를 바로 제공하지 않고 위치를 ObjectId로 제공하고 있기 때문에 runtimeModel의 getProperties로 위치에 해당하는 정보들을 얻어오는 단계가 필요합니다.
+loop counter를 취득하는 방법으로는 callFrame 객체에 있는 scopeChain 배열 내부에서 얻을 수 있습니다. Conditional Breakpoint를 만드는 방법은 조건을 문자열로 만들어 breakpoint를 부여할 때 옵션으로 주면 됩니다. 이때 특이한 사항은 다음과 같습니다.
 
-결과적으로 loop counter는 현재 block scope의 부모 scope에서 찾을 수 있습니다. 디버거에서 for 문은 소괄호 부분(head)에 진입하자마자 block scope를 생성하고 중괄호 부분(body)에 진입하면 또 새로운 block scope를 생성합니다.먼저 생성된 block scope에서 찾은 loop counter의 name과 value를 사용하여 조건을 새로 만들고 debuggerModel의 setBreakpoint에 적용합니다.
+1. 현재 scope가 아닌 부모의 scope에 접근하여야 loop counter를 얻을 수 있습니다.
+2. breakpoint는 2개를 나란히 부여해야 합니다.
+3. 조건은 문자열로 변환시켜서 부여해야 Conditional Breakpoint가 됩니다.
 
-#### for 문 head
+각 상황에 좀 더 자세히 설명하면서 주의한 점에 대해서도 설명합니다.
 
-breakpoint는 for loop head의 각 initialization, condition, afterthought에도 멈춥니다. 그리고 breakpoint의 흐름은 initialization > condition > afterthought > body 첫 번째 줄 > … > body 마지막 줄 > for 문 밖입니다. 그런데 JavaScript의 흐름은 이렇지 않습니다. 이 괴리에서 다음 3가지의 문제가 발생합니다. 모든 문제의 해결 방법은 올바른 위치의 breakpoint 방향을 알려주는 것입니다.
+현재 scope가 아닌 부모의 scope에 접근해야 하는 이유는 for 문의 initailzation part에서 let을 사용해 loop counter를 선언하면 별도의 렉시컬 스코프를 생성하기 때문입니다. 즉 디버거에서 for 문은 소괄호 부분(head)에 진입하자마자 block scope를 생성하고 중괄호 부분(body)에 진입하면 또 새로운 block scope를 생성합니다. 결과적으로 먼저 생성된 block scope에서 loop counter를 찾을 수 있습니다.
 
-**for loop body 첫 번째 줄에서 afterthought part로 이동하는 문제**
+breakpoint를 2개 부여해야 하는 이유는 디버거에 암시적인 auto resumed 현상이 있기 때문입니다. 대표적인 예로 최상단 callFrame을 restart 할 경우 발생합니다. 이는 protocol monitor로 최상단 callFrame을 restart하여 관찰 하여 발견할 수 있었습니다. 이는 임의로 호출시킬 수 있는 Debugger.resume와는 달라서 조정하는 방법을 발견하지 못했습니다. 이에 첫 번째 breakpoint까지는 임의로 수동 resume를 시키고 두 번째 breakpoint까지는 resume하지 않습니다. 자동으로 resumed 될 것이기 때문입니다.
 
-먼저 현재 body의 몇 번째 순서의 지점에 위치해 있는 지를 알아야 합니다. scopeChain에서 해당 scope의 타입(block type인 지 여부)과 시작 지점 끝 지점 정보를 습득한 이후 debuggerModel의 getPossibleBreakpoints를 활용해 loop body로 부터 몇 번째 순서의 breakpoint 지점에 멈춰있는 상태인 지 알 수 있습니다. 첫 번째 순서의 breakpoint 지점에 있다는 사실을 감지하게 되면 condition part로 이동하도록 로직을 만들었습니다. 부모의 scope가 head part를 품고 있으므로 condition을 가리키는 breakpoint를 얻을 수 있습니다.
+Conditional Breakpoint를 만들 때 조건을 부여하는 부분이 문자열로 변환되야 하는 부분은 다소 의아했습니다. 이런저런 실험을 해본 결과 그 이유는 디버거가 내부적으로 표현식을 평가할 때 eval을 사용하고 있기 때문입니다. 디버거에 Conditional breakpoint를 부여할 때 throw Error() 를 할 경우 다음과 같은 오류 메시지를 확인 할 수 있습니다.
 
-**afterthought part에서 condtion part로 이동하는 문제**
+<img src="https://github.com/user-attachments/assets/0ee4b912-4e00-4bae-94f4-d8b21abf3582" width="300px">
 
-현재 위치가 afterthought part라는 것을 알아야 합니다. debuggerModel의 searchInContent를 활용하여 현재 scope의 시작 지점에 for 키워드가 존재하는 지 확인합니다(searchInContent는 스크립트에 내가 원하는 텍스트가 있는지 검색하고 싶을 때 사용할 수 있습니다). 이때 정확성을 위해 정규표현식을 사용했는데 자체적으로 정규표현식을 만들어주는 유틸 함수를 발견하여 참고했습니다. 현재 위치를 감지한 이후에는 loop counter를 기준으로 for 문의 마지막 breakpoint로 이동시켰습니다.
+오류 스택을 보면 at eval 부분이 있어 확인이 가능했습니다. 그러므로 문자열로 표현해도 eval이 잘 통할 수 있게 조건을 만들어야 했고 결과적으로 loop counter의 이름과 value를 일치 연산자를 사용해 비교했습니다(예: `${key} === ${value}`를 백틱으로 감쌈).
 
-**condition part에서 항상 initialization part로 이동하는 문제**
+#### for 문 head의 afterthought part와 현재 위치
 
-condtion part는 loop counter가 초기값일 경우에는 initialization part로 이동하고, 초기값이 아닐 경우에는 afterthought part로 이동해야 합니다. 방향이 2가지이며 특히 후자의 경우에는 현재의 loop counter가 아닌 이전의 loop counter를 가진 afterthought로 이동해야 합니다.
+JavaScript 흐름을 고려하지 않으면, breakpoint 입장에서는 condtion part이후에 afterthought part가 오는 흐름입니다. 그러므로 BackDo 버튼 클릭 시 afterthought part에서 conditional part로 이동하는 문제가 발생합니다. 원래는 JavaScript 흐름에 맞춰서 for 문 body의 마지막 줄로 이동시키켜야 합니다. for 문의 head의 일부분인 afterthought part에 위치해있다는 사실을 감지하고 for 문 body의 마지막 위치를 얻어내면 문제를 해결할 수 있습니다.
 
-중요 포인트는 현재 loop counter가 초기값인지 여부, 이전의 loop counter의 값 두 가지를 알아내야 한다는 점입니다. 코드의 흐름을 추적하고 기억해야 합니다.
+afterthought part에 위치해있다는 사실을 감지하는 방법은 searchInContent를 활용하여 현재 scope의 시작 지점에 for 키워드가 존재하는 지 확인하면 됩니다. for 문 body의 마지막 위치를 얻어내는 방법으로는 현재 scope에서 가능한 breakpoint의 마지막 것을 사용하면 됩니다. 이때 자세히 설명할 사항은 다음과 같습니다.
 
-현재 loop counter를 initialCounter, triggeredCounter, targetCounter라는 3가지 상태로 명명합니다. triggered는 현재의 loop counter 입니다. target은 이전의 loop counter 입니다. 우선 현재의 loop counter를 triggered로 기억합니다. 다음으로 initial을 취득합니다. 아무런 조건 없이 condition part에 멈추도록 하면 얻을 수 있습니다. 마지막으로 debuggerModel의 continueToLocation을 사용하여 triggered에 도달할 때까지 loop를 실행시키면서 evaluateOnCallFrame으로 loop counter들을 수집합니다. loop counter가 triggered에 도달하면 수집해온 loop counter들 중에 마지막 것이 target입니다.
+1. searchInContent는 스크립트에 내가 원하는 텍스트가 있는지 검색하고 싶을 때 사용할 수 있습니다.
+2. 현재 for 문의 body가 아니라 for 문의 head 부분에 있음에도 불구하고 body의 마지막 부분을 얻어낼 수 있습니다.
 
-위의 과정을 통해 initialCounter, triggeredCounter, targetCounter를 알게되면 이후는 이전의 문제점들과 많이 다르지 않게 진행할 수 있습니다.
+각 상황에 좀 더 자세히 설명하면서 주의한 점에 대해서도 설명합니다.
+
+debugger 도메인의 searchInContent는 스크립트에 내가 원하는 텍스트가 있는지 검색하고 싶을 때 사용할 수 있는데, 이때 정확성을 위해 간단하지만 정규식문자열을 처음 배워 사용했습니다. Chrome DevTools frontend는 StringUtilities.ts 파일에 정규식 객체를 생성하는 createSearchRegex 유틸함수가 존재합니다. 해당 함수를 재활용해보려 했으나 searchInContent는 문자열만 받기에 그대로 쓸 수는 없습니다. 그리고 정규식을 사용할 때가 두 번 이상 없었기 때문에 import하는 것도 내키지는 않았습니다. 그래서 createSearchRegex 함수를 보고 정규식이 어떻게 만들어지는 지 flag가 뭔지 escape는 어떻게 시키는 지 등 배웠고 regexr.com와 같은 사이트에서 확인하면서 적용할 수 있었습니다.
+
+현재 for 문의 head 부분에 있음에도 불구하고 body의 마지막 부분을 얻어낼 수 있는 것은 처음에는 다소 의아했습니다. 그러나 head의 소괄호 부분만 영역으로 삼았지 않고 전체 for 문을 영역으로 삼는 것은 당연합니다. 예를 들어보면 loop counter를 i라고 했을 때, for 문 body 몇 번째 줄이서든 i를 참조해서 자유롭게 쓸 수 있습니다. 결론적으로 만약에 for 문 body에 위치한다면, scopeChain이 다음과 같은 모습이라는 것은 새로운 발견이었습니다. 그리고 이는 head 부분의 특정 part 위치를 얻는 데도 활용할 수 있습니다. 두 영역을 빼면 됩니다.
+
+<img src="https://github.com/user-attachments/assets/9a1a9859-f6c5-4f48-80cf-86c3a8953aad" width="300px"> | <img src="https://github.com/user-attachments/assets/99f631d5-209c-4da3-bc4f-a0c3c25f081f" width="300px">
+---|---|
+
+#### for 문 head의 condition part와 세 가지 상태
+
+JavaScript 흐름을 고려하지 않으면, breakpoint 입장에서는 initialization part이후에 condition part가 오는 흐름입니다. 그러므로 BackDo 버튼 클릭 시 condition part에서 무조건 initialization part로 이동하는 문제가 발생합니다. 원래는 JavaScript 흐름에 맞춰서 loop counter가 초기값일 경우에는 initialization part로 이동하고, 초기값이 아닐 경우에는 afterthought part로 이동해야 합니다. 방향이 2가지이며 특히 후자의 경우에는 현재의 loop counter가 아닌 이전의 loop counter를 가진 afterthought로 이동해야 합니다. 다음의 방법으로 문제를 해결할 수 있습니다. 코드의 흐름을 추적해 loop counter의 현재값, 초기값, 이전값을 알아내면 문제를 해결할 수 있습니다.
+
+loop counter의 현재값을 얻는 방법으로는 현재 scope에서 취득 후 저장하면 됩니다. loop counter의 초기값을 찾는 방법으로는 순수하게 조건 없이 condition part에 breakpoint를 건 다음 실행시키고 멈추게 하면 해당 위치에서 얻을 수 있습니다. 마지막으로 loop counter의 이전값을 얻는 방법은 다음과 같습니다. debuggerModel의 continueToLocation을 사용하여 현재값에 도달할 때까지 loop를 실행시키면서 evaluateOnCallFrame으로 loop counter들을 수집합니다. continueToLocation은 주어진 위치까지 실행시키는 데 사용할 수 있습니다. evaluateOnCallFrame으로 현재의 callFrame에서 표현식을 평가 후 결과값을 얻는데 사용할 수 있습니다. loop counter가 현재값에 도달하면 수집해온 loop counter들 중에 마지막 것이 이전값입니다.
+
+### 정도 : 거꾸로 가야하는 최소한의 정도를 구하기
+
+### 범위 : 이동할 레벨을 한정시키기
+
 
 ### 도달할 수 없는 블럭 판단
 
